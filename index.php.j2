@@ -1,0 +1,56 @@
+<h2>
+Ansible LAMP application Test. Server IP: {{ansible_default_ipv4['address']}} hostname: {{ansible_hostname}} Distro: {{ansible_distribution}}
+</h2>
+<?php
+$dbname = '{{ db }}';
+$dbuser = '{{ dbuser }}';
+$dbpass = '{{ dbupass }}';
+$dbhost = '{{ dbhost }}';
+
+// Create connection
+$conn = new mysqli($dbhost, $dbuser, $dbpass, $dbname);
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+} 
+
+
+
+$sql = "CREATE TABLE Hosts (
+id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+hostname VARCHAR(30) NOT NULL,
+ip VARCHAR(30) NOT NULL,
+distro VARCHAR(50),
+reg_date TIMESTAMP
+)";
+
+if ($conn->query($sql) === TRUE) {
+    echo "Table MyGuests created successfully";
+} else {
+    echo "Error creating table: " . $conn->error;
+}
+
+
+
+$sql = "INSERT INTO Hosts (hostname, ip, distro)
+VALUES ('{{ ansible_hostname }}', '{{ ansible_default_ipv4['address'] }}', '{{ ansible_distribution }}')";
+
+if ($conn->query($sql) === TRUE) {
+    echo "New record created successfullyi \n";
+} else {
+    echo "Error: " . $sql . "<br>" . $conn->error;
+}
+
+
+$sql = "SELECT id, hostname, ip, distro FROM Hosts";
+$result = $conn->query($sql);
+
+if ($result->num_rows > 0) {
+    // output data of each row
+    while($row = $result->fetch_assoc()) {
+        echo " id: " . $row["id"]. " - Name: " . $row["hostname"]. " " . $row["ip"]. " " . $row["distro"]. "<br>";
+    }
+} else {
+    echo "0 results";
+}
+
